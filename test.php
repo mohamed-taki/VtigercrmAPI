@@ -4,10 +4,10 @@
 // ini_set('display_errors', 'On');
     include "WebServiceAPI.php";
 
-    $client = new WebServiceAPI("http://localhost/vtigercrm/webservice.php",'admin',"HMsoXX5BmigD1YmI");
+    $client = new WebServiceAPI(<URL> . "/webservice.php",<username>,<user_token>);
 
     $temp = array(
-        'lastname' => 'New module name test',
+        'lastname' => 'Doe',
         'firstname' => 'John',
         'email' => 'john.doe@example.com',
         'assigned_user_id' => $client->getLoginData()['userId'],
