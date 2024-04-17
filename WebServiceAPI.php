@@ -58,6 +58,12 @@ class WebServiceAPI{
         $this->user_accessKey = $user_accessKey;
         $this->challenge_token = $this->getChallengeToken();
         $this->LoginUser();
+
+        // $this->modulesId = $this->getCurrentModules()['result'];
+    }
+
+    public function getModulesId(){
+        return $this->modulesId;
     }
     
     /** 
@@ -94,22 +100,13 @@ class WebServiceAPI{
         );
         return $this->post_curl($data)['result']['token'];
     }
-    
-    public function query($query){
-        $data = array(
-            'operation' => 'query',
-            'sessionName' => $this->login_data['sessionName'],
-            'query' => $query
-        );
-        return $this->post_curl($data);
-    }
 
     /**
      * @param $type string Record type
      * @param $elementsArray array Array of the new record elements/fields
      */
 
-    public function createRecord($type, $elementsArray){
+    public function createRecord($type, $elementsArray):array{
         $data = array(
             'operation' => 'create',
             'sessionName' => $this->login_data['sessionName'],
@@ -119,28 +116,89 @@ class WebServiceAPI{
 
         return $this->post_curl($data);
     }
-    
-    
+
     public function updateRecord($type, $elementsArray){
         $data = array(
             'operation' => 'update',
             'sessionName' => $this->login_data['sessionName'],
             'elementType' => $type,
             'element' => json_encode($elementsArray)
-            // 'id'=>$this->modulesId[$type] . 'x' . $id,
-           
         );
-
         return $this->post_curl($data);
     }
+    
 
     public function retrieve($module, $id){
         $data = array(
             'operation' => 'retrieve',
             'sessionName' => $this->login_data['sessionName'],
-            'id'=>$this->modulesId[$module] . 'x' . $id
+            'id'=> $this->modulesId[$module] . 'x' . $id
         );
         return $this->post_curl($data);
+    }
+
+    public function query($query){
+        $data = array(
+            'operation' => 'query',
+            'sessionName' => $this->login_data['sessionName'],
+            'query' => $query
+        );
+
+        return $this->post_curl($data);
+    }
+
+    // get all the fields from this module, among with the relations with other modules
+    public function describe($module){
+        $data = array(
+            'operation' => 'describe',
+            'sessionName' => $this->login_data['sessionName'],
+            'elementType' => $module,
+        );
+
+        return $this->post_curl($data);
+    }
+
+    public function convertLead(){
+        $data = array(
+            'operation' => 'convertLead',
+            'sessionName' => $this->login_data['sessionName'],
+            'id' => '10x10',
+            'assigned_user_id' => '19x1',
+            'contactDetails' => array(
+                'firstname' => 'Test fname',
+                'lastname' => 'Lmaom lname',
+                'email' => 'moham@email.com',
+                'account_id' => '11x23',
+            )
+        );
+        return $this->post_curl($data);
+    }
+
+    public function getLoginData(){
+        return $this->login_data;
+    }
+
+
+
+    public function getCurrentModules(){
+        $data = array(
+            'operation' => 'listtypes',
+            'sessionName' => $this->login_data['sessionName']
+        );
+
+        return $this->post_curl($data);
+    }
+
+    // private function getSingleModuleId($module){
+    //     return array_search($module,$this->modulesId['types'])+1;
+    // }
+
+    public function getCurrentModulesID(){
+        $modules = $this->getCurrentModules()['result']['types'];
+        foreach ($modules as $module) {
+            $this->modulesId[$module] = $this->describe($module)['result']['idPrefix'] . "<br>";
+        }
+        return $this->modulesId;
     }
 
 
@@ -156,6 +214,7 @@ class WebServiceAPI{
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS => http_build_query($data),
         );
         
@@ -170,9 +229,6 @@ class WebServiceAPI{
 
     }
 
-    public function getLoginData(){
-        return $this->login_data;
-    }
 
 }
 
