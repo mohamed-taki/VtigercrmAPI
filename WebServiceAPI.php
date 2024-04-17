@@ -58,12 +58,6 @@ class WebServiceAPI{
         $this->user_accessKey = $user_accessKey;
         $this->challenge_token = $this->getChallengeToken();
         $this->LoginUser();
-
-        $this->modulesId = $this->getCurrentModules()['result'];
-    }
-
-    public function getModulesId(){
-        return $this->modulesId;
     }
     
     /** 
@@ -100,6 +94,15 @@ class WebServiceAPI{
         );
         return $this->post_curl($data)['result']['token'];
     }
+    
+    public function query($query){
+        $data = array(
+            'operation' => 'query',
+            'sessionName' => $this->login_data['sessionName'],
+            'query' => $query
+        );
+        return $this->post_curl($data);
+    }
 
     /**
      * @param $type string Record type
@@ -116,31 +119,28 @@ class WebServiceAPI{
 
         return $this->post_curl($data);
     }
+    
+    
+    public function updateRecord($type, $elementsArray){
+        $data = array(
+            'operation' => 'update',
+            'sessionName' => $this->login_data['sessionName'],
+            'elementType' => $type,
+            'element' => json_encode($elementsArray)
+            // 'id'=>$this->modulesId[$type] . 'x' . $id,
+           
+        );
+
+        return $this->post_curl($data);
+    }
 
     public function retrieve($module, $id){
         $data = array(
             'operation' => 'retrieve',
             'sessionName' => $this->login_data['sessionName'],
-            'id'=>$this -> $this->getSingleModuleId($module) . 'x' . $id
+            'id'=>$this->modulesId[$module] . 'x' . $id
         );
         return $this->post_curl($data);
-    }
-
-    public function getLoginData(){
-        return $this->login_data;
-    }
-
-    private function getCurrentModules(){
-        $data = array(
-            'operation' => 'listtypes',
-            'sessionName' => $this->login_data['sessionName']
-        );
-
-        return $this->post_curl($data);
-    }
-
-    private function getSingleModuleId($module){
-        return array_search($module,$this->modulesId['types'])+1;
     }
 
 
@@ -168,6 +168,10 @@ class WebServiceAPI{
         curl_close($ch);
         return $response;
 
+    }
+
+    public function getLoginData(){
+        return $this->login_data;
     }
 
 }
